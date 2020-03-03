@@ -45,7 +45,7 @@ class DropTCPOrRewriteTestCase(unittest.TestCase):
 
         if expected_packet:
             self.assertEqual(packet_output[:packet_output_size.value],
-                             raw(expected_package))
+                             raw(expected_packet))
 
     def setUp(self):
         bpf_prog = BPF(src_file=b"drop_tcp_or_rewrite.c")
@@ -54,6 +54,17 @@ class DropTCPOrRewriteTestCase(unittest.TestCase):
     def test_drop_tcp(self):
         given_packet = Ether() / IP() / TCP()
         self._xdp_test_run(given_packet, None, BPF.XDP_DROP)
+
+    def test_pass_udp(self):
+        given_packet = Ether() / IP() / UDP()
+        self._xdp_test_run(given_packet, given_packet, BPF.XDP_PASS)
+
+    def test_tranform_dst(self):
+        given_packet = Ether() / IP() / TCP(dport=9090)
+        expected_packet = Ether(dst='08:00:27:dd:38:2a') / \
+            IP() / TCP(dport=9090)
+        self._xdp_test_run(given_packet, expected_packet, BPF.XDP_TX)
+
 
 if __name__ == '__main__':
     unittest.main()
