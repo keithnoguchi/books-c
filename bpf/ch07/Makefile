@@ -1,19 +1,22 @@
 # SPDX-License-Identifier: GPL-2.0
+SUDO	?= sudo
+CLANG	?= clang
+PYTHON	?= python
 PROG	:= drop_tcp
 BCCPROG	:= drop_tcp_count
 BCCTEST	:= drop_tcp_or_rewrite_test
 
 .PHONY: all run test clean
-all: $(PROG) test
+all: $(PROG)
 $(PROG):
-	clang -O2 -target bpf -c $@.c -o $@.o
+	$(CLANG) -O2 -target bpf -c $@.c -o $@.o
 .PHONY: $(BCCPROG)
 run: $(BCCPROG)
 $(BCCPROG):
-	@sudo python $@.py
+	@$(SUDO) $(PYTHON) $@.py
 .PHONY: $(BCCTEST)
 test: $(BCCTEST)
 $(BCCTEST):
-	sudo python $@.py
+	$(SUDO) $(PYTHON) $@.py
 clean:
-	$(RM) *.o
+	@$(RM) *.o

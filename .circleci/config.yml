@@ -1,0 +1,52 @@
+---
+version: 2
+default: &defaults
+  working_directory: /home/circleci/project/books-c
+  machine:
+    image: ubuntu-1604:201903-01
+workflows:
+  version: 2
+  checkout_build_test:
+    jobs:
+      - checkout
+      - build:
+          requires:
+            - checkout
+      - test:
+          requires:
+            - checkout
+jobs:
+  checkout:
+    <<: *defaults
+    steps:
+      - checkout
+      - persist_to_workspace:
+          root: .
+          paths: .
+  build:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Install development package(s)
+          command: |
+            sudo wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+            sudo apt-add-repository "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-6.0 main"
+            sudo apt-get update
+            sudo apt-get install -y clang-6.0 linux-headers-$(uname -r)
+      - run: export ARCH=x86 CLANG=clang-6.0 make
+  test:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Install development package(s)
+          command: |
+            sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4052245BD4284CDD
+            echo "deb https://repo.iovisor.org/apt/$(lsb_release -cs) $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/iovisor.list
+            sudo apt-get update
+            sudo apt-get install -y bcc-tools libbcc-examples linux-headers-$(uname -r)
+            sudo pip install scapy
+      - run: make test
