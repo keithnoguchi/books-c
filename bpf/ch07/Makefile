@@ -6,7 +6,7 @@ PROG	:= drop_tcp
 BCCPROG	:= drop_tcp_count
 BCCTEST	:= drop_tcp_or_rewrite_test
 
-.PHONY: all run test clean
+.PHONY: run test clean
 all: $(PROG)
 $(PROG):
 	$(CLANG) -O2 -target bpf -c $@.c -o $@.o

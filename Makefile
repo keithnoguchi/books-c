@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
-BOOKS	:= bpf
+BOOKS	:= algorithms
+BOOKS	+= bpf
 all:
 %:
-	@for book in $(BOOKS); do make -C $${book} $*; done
+	@for book in $(BOOKS); do if ! make -C $${book} $*; then exit 1; fi; done
