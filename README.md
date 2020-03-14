@@ -1,6 +1,6 @@
 # books-c
 
-[![CircleCI]](https://app.circleci.com/github/keithnoguchi/books-c/pipelines)
+[![CircleCI]](https://app.circleci.com/pipelines/github/keithnoguchi/books-c)
 
 [circleci]: https://circleci.com/gh/keithnoguchi/books-c.svg?style=svg
 

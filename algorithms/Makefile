@@ -2,4 +2,4 @@
 CHAPS	:= ch05
 all:
 %:
-	@for chapter in $(CHAPS); do make -C $${chapter} $*; done
+	@for chapter in $(CHAPS); do if ! make -C $${chapter} $*; then exit 1; fi done

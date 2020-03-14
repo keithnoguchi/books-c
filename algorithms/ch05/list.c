@@ -13,15 +13,16 @@ int list_init(struct list *list, void (*dtor)(void *data))
 	return 0;
 }
 
-void list_term(struct list *list)
+void list_destroy(struct list *list)
 {
 	struct node *node, *next;
 
-	for (node = list->head; node != list->tail; node = next) {
+	for (node = list->head; node; node = next) {
 		next = node->next;
 		if (node->data && list->dtor)
 			list->dtor((void *)node->data);
 		free(node);
+		list->size--;
 	}
 }
 
@@ -39,8 +40,11 @@ int list_ins_next(struct list *list, struct node *node, const void *data)
 		next = &node->next;
 		if (node == list->tail)
 			list->tail = new;
-	} else
+	} else {
 		next = &list->head;
+		if (!list->tail)
+			list->tail = new;
+	}
 	new->next = *next;
 	*next = new;
 	list->size++;
@@ -60,8 +64,7 @@ int list_rem_next(struct list *list, struct node *node, void **data)
 		next = &list->head;
 	rem = *next;
 	*next = rem->next;
-	if (rem->data)
-		list->dtor((void *)rem->data);
+	*data = (void *)rem->data;
 	free(rem);
 	list->size--;
 	return 0;

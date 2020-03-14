@@ -14,4 +14,9 @@ struct node {
 	const void	*data;
 };
 
+int list_init(struct list *list, void (*dtor)(void *data));
+void list_destroy(struct list *list);
+int list_ins_next(struct list *list, struct node *node, const void *data);
+int list_rem_next(struct list *list, struct node *node, void **data);
+
 #endif /* _LIST_H */
