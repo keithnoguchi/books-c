@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0
-TEST	:= list_test
+TEST	:= list_test dlist_test
 TESTOBJ	:= $(patsubst %,%.o,$(TEST))
 OBJ	:= $(patsubst %_test,%.o,$(TEST))
-LIB	:= liba.a
+LIB	:= libch05.a
 CFLAGS	+= -Wall
 CFLAGS	+= -I.
 CFLAGS	+= -g
@@ -10,7 +10,7 @@ CFLAGS	+= -g
 all: $(LIB)
 $(LIB): $(OBJ)
 	$(AR) rcv $@ $^
-%.o: %.c %.h
+%.o: %.c %.h Makefile
 	$(CC) $(CFLAGS) -c $*.c -o $@
 test: $(TEST)
 	@for test in $^; do if ./$${test}; \
@@ -19,7 +19,7 @@ test: $(TEST)
 	fi; done
 $(TEST): $(TESTOBJ) $(LIB)
 	$(CC) $(CFLAGS) -o $@ $@.o $(LIB)
-%_test.o: %_test.c %.h
+%_test.o: %_test.c %.h Makefile
 	$(CC) $(CFLAGS) -c $*_test.c -o $@
 clean:
 	$(RM) $(OBJ) $(LIB) $(PROG)

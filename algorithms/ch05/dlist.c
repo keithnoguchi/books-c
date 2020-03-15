@@ -2,57 +2,59 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "list.h"
+#include "dlist.h"
 
-int list_init(struct list *list, void (*dtor)(void *data))
+int dlist_init(struct list *list, void (*dtor)(void *data))
 {
-	if (!list)
-		return -1;
 	memset(list, 0, sizeof(*list));
 	list->dtor = dtor;
+	list->size = 0;
 	return 0;
 }
 
-void list_destroy(struct list *list)
+void dlist_destroy(struct list *list)
 {
 	struct node *node, *next;
 
 	for (node = list->head; node; node = next) {
 		next = node->next;
-		if (node->data && list->dtor)
+		if (list->dtor)
 			list->dtor((void *)node->data);
 		free(node);
-		list->size--;
 	}
 	memset(list, 0, sizeof(*list));
 }
 
-int list_ins_next(struct list *list, struct node *node, const void *data)
+int dlist_ins_next(struct list *list, struct node *node, const void *data)
 {
-	struct node **next;
-	struct node *new;
+	struct node *new, **next, **prev;
 
 	new = malloc(sizeof(*new));
 	if (!new)
 		return -1;
 	memset(new, 0, sizeof(*new));
+	new->next = new->prev = NULL;
 	new->data = data;
+
 	if (node)
 		next = &node->next;
 	else
 		next = &list->head;
-	if (!*next)
-		list->tail = new;
+	if (*next)
+		prev = &(*next)->prev;
+	else
+		prev = &list->tail;
 	new->next = *next;
+	new->prev = *prev;
 	*next = new;
+	*prev = new;
 	list->size++;
 	return 0;
 }
 
-int list_rem_next(struct list *list, struct node *node, void **data)
+int dlist_rem_next(struct list *list, struct node *node, void **data)
 {
-	struct node **next;
-	struct node *rem;
+	struct node *rem, **next, **prev;
 
 	if (node)
 		next = &node->next;
@@ -61,11 +63,13 @@ int list_rem_next(struct list *list, struct node *node, void **data)
 	rem = *next;
 	if (!rem)
 		return -1;
-	if (!rem->next)
-		list->tail = node;
+	if (rem->next)
+		prev = &rem->next->prev;
+	else
+		prev = &list->tail;
 	*next = rem->next;
+	*prev = rem->prev;
 	*data = (void *)rem->data;
 	free(rem);
-	list->size--;
 	return 0;
 }
