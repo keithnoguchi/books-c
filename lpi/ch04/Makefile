@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0
 PROG	:= copy
-CFLAGS	+= -Wall
+PROG	+= seek
+CFLAGS	+= -Wall -Werror
 CFLAGS	+= -I.
 CFLAGS	+= -g
 .PHONY: test clean
