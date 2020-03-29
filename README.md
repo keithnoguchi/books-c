@@ -4,9 +4,9 @@
 
 [circleci]: https://circleci.com/gh/keithnoguchi/books-c.svg?style=svg
 
-- [The Linux Programming Interface]
 - [Mastering Algorithms with C]
 - [Linux Observability with BPF]
+- [The Linux Programming Interface]
 
 [the linux programming interface]: http://man7.org/tlpi/
 [mastering algorithms with c]: http://shop.oreilly.com/product/9781565924536.do

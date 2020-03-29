@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0
-BOOKS	:= algorithm
+BOOKS	:= algo
 BOOKS	+= bpf
 BOOKS	+= lpi
 all:
