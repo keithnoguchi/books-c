@@ -1,6 +1,6 @@
 # The Linux Programming Interface
 
-[The Linux Programming Interface]
+[Michael Kerrisk]'s wonderful [The Linux Programming Interface] examples.
 
 - Chapter 06: Processes
   - [seg](ch06/seg.c): memory segmentation
@@ -9,4 +9,5 @@
 
 Happy Hacking!
 
+[michael kerrisk]: http://man7.org/mtk/index.html
 [the linux programming interface]: http://man7.org/tlpi/
