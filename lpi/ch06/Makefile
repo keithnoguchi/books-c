@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0
-PROG	:= seg
+PROG	:= seg env
 CFLAGS	+= -Wall -Werror
 CFLAGS	+= -I.
 CFLAGS	+= -g
