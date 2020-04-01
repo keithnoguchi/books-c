@@ -15,7 +15,7 @@ int main(void)
 {
 	int i;
 	register int j; /* allocated in register if possible */
-	volatile int k; /* avoid optimazation */
+	volatile int k; /* avoid optimization */
 
 	i = 111;
 	j = 222;

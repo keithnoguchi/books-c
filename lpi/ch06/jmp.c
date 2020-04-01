@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <setjmp.h>
+#include <string.h>
 
 static jmp_buf env;
 
@@ -17,8 +18,16 @@ static void f1(int argc)
 	f2();
 }
 
+static void usage(const char *const progname)
+{
+	printf("usage: %s [optional argument to call call f2()]\n", progname);
+	exit(EXIT_SUCCESS);
+}
+
 int main(int argc, const char *const argv[])
 {
+	if (argc > 1 && !strcmp(argv[1], "--help"))
+	    usage(argv[0]);
 	switch (setjmp(env)) {
 	case 0:
 		printf("Calling f1() after initial setjmp()\n");
@@ -33,5 +42,3 @@ int main(int argc, const char *const argv[])
 	}
 	exit(EXIT_SUCCESS);
 }
-
-

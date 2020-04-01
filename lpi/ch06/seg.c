@@ -22,7 +22,7 @@ static void do_calc(int val)
 	}
 }
 
-int main(int argc, const char *const argv[])
+int main(void)
 {
 	static int key = 9973;
 	static char buf[1024000000];
