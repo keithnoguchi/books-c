@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0
-PROG	:= stream-server
+PROG	:= stream-server stream-client
 CFLAGS	+= -Wall -Werror
 CFLAGS	+= -Wextra
 CFLAGS	+= -I.
