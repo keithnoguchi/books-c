@@ -1,68 +1,73 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
-#include <errno.h>
+#include <unistd.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <err.h>
+#include <errno.h>
 
-#define SERVER "/tmp/uds-stream"
-#define BACKLOG 5
-#define BUFLEN 10
+#define DEFAULT_PATH	"/tmp/mysock"
+#define DEFAULT_BACKLOG	5
 
 int main(int argc, const char *const argv[])
 {
-	const char *const progname = argv[0];
-	const char *path = SERVER;
+	socklen_t alen = sizeof(struct sockaddr_un);
+	const char *path = DEFAULT_PATH;
+	int backlog = DEFAULT_BACKLOG;
 	struct sockaddr_un addr;
-	int fd;
+	int fd, ret;
 
 	if (argc == 2)
 		path = argv[1];
+	if (argc == 3)
+		backlog = atoi(argv[2]);
 
 	fd = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (fd == -1)
-		goto err;
+		err(EXIT_FAILURE, "cannot create a socket");
 
-	if (remove(path) == -1 && errno != ENOENT)
-		goto err;
+	/* cleanup the path first */
+	ret = unlink(path);
+	if (ret == -1 && errno != ENOENT)
+		err(EXIT_FAILURE, "cannot unlink '%s'", path);
 
 	memset(&addr, 0, sizeof(addr));
 	addr.sun_family = AF_UNIX;
 	strncpy(addr.sun_path, path, sizeof(addr.sun_path) - 1);
+	ret = bind(fd, (struct sockaddr *)&addr, alen);
+	if (ret == -1)
+		err(EXIT_FAILURE, "cannot bind to '%s'", path);
 
-	if (bind(fd, (struct sockaddr *)&addr, sizeof(addr)) == -1)
-		goto err;
+	ret = listen(fd, backlog);
+	if (ret == -1)
+		err(EXIT_FAILURE, "listen error with backlog(%d)", backlog);
 
-	if (listen(fd, BACKLOG) == -1)
-		goto err;
-
-	/* sequential client handling */
-	for ( ; ; ) {
-		char *ptr, buf[BUFLEN];
-		ssize_t ret, remain;
+	for (;;) {
+		char ibuf[BUFSIZ];
+		ssize_t n, ret;
 		int cfd;
 
-		/* we don't track the peer address */
 		cfd = accept(fd, NULL, NULL);
 		if (cfd == -1)
-			goto err;
+			err(EXIT_FAILURE, "accept error");
 
-		/* read until end-of-file or error */
-		while ((ret = read(cfd, buf, sizeof(buf))) > 0)
-			for (ptr = buf, remain = ret; remain > 0; ptr += ret, remain -= ret)
-				if (write(STDOUT_FILENO, ptr, remain) == -1)
-					goto err;
+		/* dump the message to the stdout */
+		while ((n = read(cfd, ibuf, BUFSIZ)) > 0)
+			if ((ret = write(STDOUT_FILENO, ibuf, n)) != n)
+				err(EXIT_FAILURE, "partial/failed write(%ld)", ret);
 
-		/* cleanup */
-		if (ret == -1)
-			goto err;
-		if (close(cfd) == -1)
-			goto err;
+		if (n == -1)
+			err(EXIT_FAILURE, "read error");
 	}
+	ret = close(fd);
+	if (ret == -1)
+		err(EXIT_FAILURE, "listen socket close error");
+
+	ret = remove(path);
+	if (ret == -1)
+		err(EXIT_FAILURE, "cannot cleanup '%s'", path);
+
 	exit(EXIT_SUCCESS);
-err:
-	perror(progname);
-	exit(EXIT_FAILURE);
 }

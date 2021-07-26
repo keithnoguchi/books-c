@@ -5,15 +5,15 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <err.h>
 
-#define SERVER "/tmp/uds-stream"
-#define BUFLEN 10
+#define DEFAULT_PATH	"/tmp/mysock"
 
 int main(int argc, const char *const argv[])
 {
-	const char *const progname = argv[0];
-	const char *path = SERVER;
+	const char *path = DEFAULT_PATH;
 	struct sockaddr_un addr;
+	socklen_t alen;
 	int fd, ret;
 
 	if (argc > 1)
@@ -21,35 +21,35 @@ int main(int argc, const char *const argv[])
 
 	fd = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (fd == -1)
-		goto err;
+		err(EXIT_FAILURE, "socket error");
 
 	memset(&addr, 0, sizeof(addr));
 	addr.sun_family = AF_UNIX;
 	strncpy(addr.sun_path, path, sizeof(addr.sun_path) - 1);
-
-	ret = connect(fd, (struct sockaddr *)&addr, sizeof(addr));
+	alen = sizeof(addr);
+	ret = connect(fd, (struct sockaddr *)&addr, alen);
 	if (ret == -1)
-		goto err;
+		err(EXIT_FAILURE, "connect(%s) error", path);
 
-	for ( ; ; ) {
-		char *ptr, buf[BUFLEN];
-		ssize_t ret, remain;
+	while (1) {
+		char buf[BUFSIZ], *p;
+		ssize_t ret, out;
 
 		ret = read(STDIN_FILENO, buf, sizeof(buf));
 		if (ret == -1)
-			goto err;
+			err(EXIT_FAILURE, "read(stdin) error");
 		else if (ret == 0)
 			break;
-		for (ptr = buf, remain = ret; remain > 0; ptr += ret, remain -= ret) {
-			ret = write(fd, ptr, remain); 
-			if (ret == -1)
-				goto err;
+
+		/* write out the message over the socket */
+		for (p = buf, out = ret; out > 0; p += out, out -= ret) {
+			if ((ret = write(fd, p, out)) == -1)
+				err(EXIT_FAILURE, "write(%d) error", fd);
 		}
 	}
-	if (close(fd) == -1)
-		goto err;
+	ret = close(fd);
+	if (ret == -1)
+		err(EXIT_FAILURE, "close error");
+
 	exit(EXIT_SUCCESS);
-err:
-	perror(progname);
-	exit(EXIT_FAILURE);
 }
